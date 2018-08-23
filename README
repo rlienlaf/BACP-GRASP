@@ -1,0 +1,29 @@
+#README
+
+
+#Problema: BACP
+#Método: GRASP
+#Alumno: Roberto Gabriel Lienlaf Soto
+#Rol: 201373009-4
+
+#Compilación:
+g++ -O3 -o bacp bacp.cpp
+
+
+#Ejecución:
+
+#./bacp <nombre_archivo> <Parámetro_F_Evaluacion> <restarts> <max_iter> <largo_LRC> [opcional:semilla] 
+
+#Ejemplo, dando semilla:
+#archivo: bacp8.txt
+#P F_Evaluacion: 2
+#Restarts: 20
+#Max_iteraciones: 100
+#Largo Lista restringida Candidatos: 3
+#Semilla generadora: 123758970193
+
+./bacp bacp8.txt 2 20 100 3 123758970193
+
+#Ejemplo, semilla aleatoria:
+
+./bacp bacp10.txt 1 10 500 2

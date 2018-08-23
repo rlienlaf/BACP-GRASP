@@ -1,0 +1,111 @@
+
+
+\section{Representación}
+
+En la representación utilizada para la solución en implementación del algoritmo GRASP se utilizó un arreglo de largo total \emph{número de cursos}, en donde el valor asignado a cada casilla corresponde al periodo en donde tal curso se dictará. Esto permite evitar violar algunas restricciones como lo son que los cursos no se repitan y que cada curso este asignado justamente a un periodo concreto. Al momento de crear una solución inicial basta con asignar algún periodo válido a cada curso a dictar (un valor a cada casilla). \par
+Para el código, cada curso se almacenaró en un \emph{struct} que contiene su nombre y su cantidad de créditos. Los prerrequisitos se almacenaron en un arreglo de \emph{struct}, en donde cada \emph{struct} contiene dos cursos: el curso en cuestión y su prerrequisito. Para la solución se utilizó un arreglo de \emph{struct}, en donde cada \emph{struct} corresponde a un \emph{struct} curso y a un entero indicando el periodo asignado. Además se utilizaron otros \emph{struct} con objetivo de facilitar el acceso a datos y el cálculo sobre los mismos.\par
+Para enlazar los prerrequisitos, los cursos, la/s solución/es y el resto de estructuras, se utiliza principalmente el \emph{struct} curso.\par
+La evaluación se realiza utilizando las funciones de evaluación planteadas en \cite{monette2007cp}, en donde se calcula una sumatoria de las diferencias de las cargas totales de cada periodo con respecto a la media elevada a cierto valor. Dicho valor puede variarse y es uno de los parámetros del algoritmo, por lo que se pueden realizar pruebas con distintas funciones de evaluación. Además, como evaluación en la construcción y reparación se utiliza un valor correspondiente a la cantidad de restricciones rotas, ya sea restricciones de prerrequisitos, de carga o de cantidad de cursos. Las dos últimas restricciones son evaluadas con un peso correspondiente a la diferencia entre el valor calculado para cada periodo y la media total (carga o cantidad).\par
+Para la reparación se utiliza un \emph{Hill Climbing} con \emph{mejor mejora}. En cada iteración del HC se elige al azar un curso y se calcula las evaluaciones correspondientes a los posibles nuevos estados al cambiar el periodo actual a dicho periodo, se busca el mejor valor y si dicho valor provee una mejora, se actualiza la solución. El cambio del periodo asignado a un curso por otro periodo distinto para el mismo curso corresponde al movimiento del algoritmo de reparación HC. 
+
+
+\section{Descripción del Algoritmo}
+
+El algoritmo utilizado corresponde a un GRASP\footnote{Greedy Randomized Adaptive Search Procedures}, en donde se utiliza una función Greedy con una Lista restringida de Candidatos para crear una solución y se utiliza un \emph{Hill Climbing} como algoritmo de búsqueda (post procesamiento).
+
+\subsection{GRASP}
+
+\begin{itemize}
+Mientras criterio de parada no se cumpla:
+\item PreProcesamiento 
+Posible trabajo, utilizando conocimiento previo, sobre las soluciones o la estructura para facilitar o mejorar el algoritmo.
+\item Construcción de una solución (Greedy)
+\begin{itemize}
+\item Inicializar solución vacía
+\item Definir pool
+Mientras solución no completa y pool no vacío:
+\item Utilizar función miope para elegir elementos del pool
+\item Agregar mejores elementos a Lista restringida de Candidatos
+\item Elegir elemento de la Lista restringida de Candidatos
+\end{itemize}
+\item PostProcesamiento (Algoritmo de reparación: HillClimbing)
+
+\begin{itemize}
+\item Representación
+\item Solución inicial
+\item Función de evaluación
+\item Movimiento
+\item Criterio de seleccion de una variable
+\item Criterio de aceptación
+\item Criterio de Término
+\item Número de restart
+\end{itemize}
+
+\end{itemize}
+
+
+\subsection{Detalle GRASP}
+
+\begin{itemize}
+Mientras criterio de parada no se cumpla:
+\item PreProcesamiento: Antes de construir las soluciones se calcula un valor para cada curso según sus prerrequisitos: valores menores indican que el curso es un prerrequisito para varios cursos, mientras que valores mayores indican que el curso tiene varios cursos como prerrequisitos. 
+\item Construcción de una solución (Greedy)
+\begin{itemize}
+\item Inicializar solución vacía: Se utiliza un arreglo de \emph{struct} Solución, los cuales contiene un \emph{struct} Curso y un valor entero correspondiente al periodo asignado.
+\item Definir pool: La lista de periodos posibles para el siguiente curso a asignar.
+Mientras solución no completa y pool no vacío:
+\item Utilizar función miope para elegir elementos del pool: Se calcula la Función de evaluación y la evaluación de las restricciones para cada periodo en donde es posible agregar el curso. 
+\item Agregar mejores elementos a Lista restringida de Candidatos:  Se ordenan dependiendo a la lista de prerrequisito, un periodo que no rompa ninguna restriccion de prerrequisitos tiene prioridad, por sobre dicho orden se ordenan los elementos dependiendo a las evaluaciones realizadas en el paso anterior. Los mejores valores despues de estos ordenamientos pasan a la Lista restringida de Candidatos.
+\item Elegir elemento de la Lista restringida de Candidatos: se escoge al azar un periodo de la Lista restringida de Candidatos. 
+\end{itemize}
+\item PostProcesamiento (Algoritmo de reparación: HillClimbing)
+Se utilizó un algoritmo de Hill Climbing con mejor mejora.
+
+\begin{itemize}
+\item Representación: Un arreglo de \emph{struct} en donde en cada casilla se tiene un curso y un entero que indica el periodo asignado.
+\item Solución inicial: Una solución construida con Greedy $+$ LRC.
+\item Función de evaluación: Hay dos formas de evaluar una solución. Primeramente se calcula la cantidad de restricciones rotas: de carga, de cantidad de cursos y de prerrequisitos rotos. Las restricciones de carga y de cantidad de cursos tiene un peso correspondiente a la diferencia de la carga o cantidad calculada y la carga o cantidad promedio. La segunda Función de Evaluación corresponde a la suma de las diferencias de las cargas totales de cada periodo y el valor promedio, cada diferencia elevada a un parámetro dado. Cabe destacar que la los pesos mencionados en la primera Función de Evaluación corresponden a la segunda Funcíón de Evaluación con parámetro 1 (para la carga) y una variacion para la cantidad de cursos. 
+\item Movimiento: El movimiento utilizado se basa en elegir al azar un cursos de la solución y variar el periodo asignado. Se utilizan las Funciones de Evaluación sobre las alternativas y se escoge el mejor de ellos. 
+\item Criterio de seleccion de una variable: Aleatoriamente.
+\item Criterio de aceptación: Mejor mejora. Para el mejor vecino encontrado, si la primera Función de Evaluación entrega un valor menor, se acepta. En caso de que entregue el mismo valor, se utiliza la segunda Función de Evaluación, si esta entrega un valor menor, se acepta. Se rechaza en cualquier otro caso.
+\item Criterio de Término: Máximo número de iteraciones
+\item Número de restarts: Parámetro dado al algoritmo.
+\end{itemize}
+Cada Restart implica una nueva solución inicial y las correspondientes iteraciones del Algoritmo de Búsqueda sobre la misma.
+
+\end{itemize}
+
+
+\section{Experimentos}
+Para la implementación del GRASP con HC hay una serie de parámetros que se pueden variar para obtener distinta calidad de soluciones finales, pero que pueden afectar el tiempo de ejecución.
+
+\begin{itemize}
+\item \textbf{P}: Es el parámetro correspondiente al valor de la Función de Evaluación. Es el valor al cual se eleva la diferencia de cargas totales de los periodos con respecto a la media.
+\item \textbf{Restart}: El número de Restart correspondiende. Un Restart corresponde a la construcción de una solución inicial y a sus posteriores iteraciones del Algoritmo de Búsqueda.
+\item \textbf{Max\_iter}: El número de iteraciones que realizará el Hill Climbing sobre una solución inicial dada.
+\item \textbf{Length}: Corresponde al largo de la Lista restringida de Candidatos. Un valor de Length $= 1$ corresponde a un Greedy.
+\end{itemize}
+
+En los experimentos hechos se variaron todos los parámetros antes mencionados en los siguientes valores:
+
+\begin{itemize}
+	\item P $= {1, 2, 0}$
+	El valor $0$ corresponde a Infinito, lo que transforma la Función de Evaluación en un \emph{max}.
+	\item Restart $= {10, 50}$ 
+	\item Max\_iter $= {200, 1000}$
+	\item Length $= {1, 2, 3}$
+	El valor 1 corresponde a un Greedy normal.
+\end{itemize}
+
+Las instancias analizadas corresponden a las tres instancias originales del problema, planteadas en \cite{castro2001variable} y además una pequeña instancia planteada en \cite{chiarandini2012balanced}, pero adaptada al problema BACP original.
+
+\begin{itemize}
+	\item toy.txt
+	\item bacp8.txt
+	\item bacp10.txt
+	\item bacp12.txt
+\end{itemize}
+
+\section{Resultados}
+
+\section{Conclusiones}
